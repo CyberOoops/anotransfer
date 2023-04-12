@@ -133,8 +133,8 @@ def get_test_results(
         [timestamps, labels, scores, values], missing=missing
     )
 
-    adjusted_scores = at.utils.adjust_scores(
-            labels=adjusted_labels, scores=adjusted_scores)
+    # adjusted_scores = at.utils.adjust_scores(
+    #         labels=adjusted_labels, scores=adjusted_scores)
     """ precision, recall, th = precision_recall_curve(adjusted_labels, adjusted_scores, pos_label=1)
 
 
@@ -144,21 +144,22 @@ def get_test_results(
 
     best_precision, best_recall, best_f1_score = precision[arg_max], recall[arg_max], f1_score[arg_max]
     threshold = th[arg_max] """
-    max_th = np.max(adjusted_scores)+1
-    min_th = np.min(adjusted_scores)
-    max_f1 = 0.0
-    thres = 0.0
-    pre = 0.0
-    rec = 0.0
-    for i in range(0,1000+1):
-        now_thresh = (max_th-min_th)/1000*i+min_th
-        accuracy, precision, recall, f_score = get_f1_score(now_thresh, adjusted_scores, adjusted_labels)
-        if(f_score>max_f1):
-            max_f1 = f_score
-            thres = now_thresh
-            pre = precision
-            rec = recall
-    print('min_th{} max_th{} thres{} f_score{}'.format(min_th,max_th,thres,max_f1))
+    # max_th = np.max(adjusted_scores)+1
+    # min_th = np.min(adjusted_scores)
+    # max_f1 = 0.0
+    # thres = 0.0
+    # pre = 0.0
+    # rec = 0.0
+    # for i in range(0,1000+1):
+    #     now_thresh = (max_th-min_th)/1000*i+min_th
+    #     accuracy, precision, recall, f_score = get_f1_score(now_thresh, adjusted_scores, adjusted_labels)
+    #     if(f_score>max_f1):
+    #         max_f1 = f_score
+    #         thres = now_thresh
+    #         pre = precision
+    #         rec = recall
+    max_f1,pre,rec,predict = at.utils.best_f1(adjusted_scores,adjusted_labels)
+    print('f_score{} pre{} rec{}'.format(max_f1,pre,rec))
     # with open('all_result.txt','a') as f:
     #     f.write('%f %f %f\n'%(max_f1,pre,rec))
     return max_f1,pre,rec
@@ -371,7 +372,10 @@ def main(finetune_num=200):
                         missing=test_kpi.missing,
                         values=test_kpi.values
                     )
-            tmp_result1[name] = f1_score
+            tmp_result1[name] = {}
+            tmp_result1[name]['f1'] = f1_score
+            tmp_result1[name]['pre'] = pre
+            tmp_result1[name]['rec'] = rec
             f1_score,pre,rec = get_delay_test_results(
                         timestamps=test_kpi.timestamps,
                         labels=test_kpi.labels,
@@ -380,7 +384,10 @@ def main(finetune_num=200):
                         values=test_kpi.values,
                         k=kk,
                     )
-            tmp_result2[name] = f1_score
+            tmp_result2[name] = {}
+            tmp_result2[name]['f1'] = f1_score
+            tmp_result2[name]['pre'] = pre
+            tmp_result2[name]['rec'] = rec
 
             print(f"{i} - {name}")
     
